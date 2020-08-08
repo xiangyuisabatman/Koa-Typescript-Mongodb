@@ -12,11 +12,11 @@
   * 错误处理
   * koa-body
   * koa-jwt + jsonwebtoken
-* [CentOS 7.6 环境搭建](#CentOS 7.6 环境搭建)
+* [CentOS 7.6 环境搭建](#CentOS7.6环境搭建)
   * 安装javajdk
   * 安装node
   * 安装mongodb
-* [jenkins - 持续集成,自动化部署](#jenkins - 持续集成,自动化部署)
+* [jenkins - 持续集成,自动化部署](#jenkins-持续集成,自动化部署)
 * [nginx相关操作](#nginx)
 
 ## 基础
@@ -188,7 +188,7 @@ src/controllers // 控制层
     }))
   ```
 
-## CentOS 7.6 环境搭建
+## CentOS7.6环境搭建
 - 安装javajdk
   - [下载linux x64压缩包](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
   - 通过ftp工具上传到服务器
@@ -230,7 +230,7 @@ src/controllers // 控制层
     ```
     - 配置完,服务器需要对数据库启动的端口号设置完全组.
 
-## jenkins - 持续集成,自动化部署
+## jenkins-持续集成,自动化部署
 - `wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/jenkins.repo` 添加jenkins源
 - `rpm --import https://pkg.jenkins.io/redhat/jenkins.io.key` 安装jenkins key
 - `sudo yum install jenkins` 安装jenkins  
