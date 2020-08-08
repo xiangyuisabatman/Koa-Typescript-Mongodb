@@ -2,6 +2,23 @@
 - 此项目为一位vue前端开发,在做个人项目时对node后端学习并实践记录.技术栈主要为vue+koa+typescript+mongodb,并且有一些服务器配置,持续集成,代理,对象存储等等.此项目不包含具体代码展示,介绍的是工程搭建时学习步骤,可能需要的工具和可能遇到的问题.
 - 本项目主要介绍在可以正常使用koa项目后所完成的一些操作,关于koa项目如果初始化,可自行进行查询搭建.并且对于框架的使用不作详细说明.
 
+## 目录
+* [基础](#基础)
+* [mongodb安装](#mongodb安装)
+* [本地koa连接mongodb](#本地koa连接mongodb)
+* [koa相关工具组件](#koa相关工具组件)
+  * koa-logger
+  * koa-router
+  * 错误处理
+  * koa-body
+  * koa-jwt + jsonwebtoken
+* [CentOS 7.6 环境搭建](#CentOS 7.6 环境搭建)
+  * 安装javajdk
+  * 安装node
+  * 安装mongodb
+* [jenkins - 持续集成,自动化部署](#jenkins - 持续集成,自动化部署)
+* [nginx相关操作](#nginx)
+
 ## 基础
 1. 安装node, npm环境,在命令行node -v, npm -v 判断node, npm安装是否成功
 2. 运行koa项目,打开地址可正常访问
