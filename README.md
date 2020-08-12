@@ -1,4 +1,4 @@
-# koa-typescript-mongodb
+# Koa-Typescript-Mongodb
 - 此项目为一位vue前端开发,在做个人项目时对node后端学习并实践记录.技术栈主要为vue+koa+typescript+mongodb,并且有一些服务器配置,持续集成,代理,对象存储等等.此项目不包含具体代码展示,介绍的是工程搭建时学习步骤,可能需要的工具和可能遇到的问题.
 - 本项目主要介绍在可以正常使用koa项目后所完成的一些操作,关于koa项目如果初始化,可自行进行查询搭建.并且对于框架的使用不作详细说明.
 
@@ -16,13 +16,18 @@
   * 安装javajdk
   * 安装node
   * 安装mongodb
-* [jenkins-持续集成,自动化部署](#jenkins)
+* [jenkins - 持续集成,自动化部署](#jenkins)
 * [nginx相关操作](#nginx)
+* [git相关操作](#git相关操作)
+  * 把本地文件夹设置成git远程仓库
+* [对象存储 - 文件上传](#对象存储)
+  * 阿里云oss
+  * 腾讯云cos
 
 ## 基础
 1. 安装node, npm环境,在命令行node -v, npm -v 判断node, npm安装是否成功
 2. 运行koa项目,打开地址可正常访问
- 
+
 
 ## mongodb安装
 1. windows 本地环境安装mongodb,前往官网安装mongodb,创建db(数据库)文件夹,logs(日志)文件夹
@@ -41,7 +46,7 @@ import config from './index'
 const initDB = () => {
     mongoose.connect(
         config.dbPath,
-        { 
+        {
             useNewUrlParser: true,
             useUnifiedTopology: true,
             useCreateIndex: true,
@@ -69,12 +74,12 @@ src/controllers // 控制层
   - 在控制台输出请求日志
   ```
     npm i koa-logger --save
-    
+
     src/server.ts
-    
+
     import logger from 'koa-logger'
     app.use(logger())
-    
+
     app.use(async (ctx: { method: any; url: any }, next: () => any) => {
         const start = Number(new Date())
         await next()
@@ -87,26 +92,26 @@ src/controllers // 控制层
   - 创建路由
   ```
     npm i koa-router --save
-  
+
     src/routes/index.ts
-    
+
     import Router from "koa-router";    // 导入koa-router
     import {index} from '../controllers/test'
-    
+
     // 新建一个koa-router对象
     const router:Router = new Router({
         prefix: '/api' // 添加前缀
     });     
-    
+
     router.get('/', index)
-    
+
     export default router
   ```
 - 错误处理
   - 监听错误并返回错误信息
   ```
     src/server.ts
-    
+
     app.on('error', async (err, ctx) => {
         let errStruct = {
             errCode: 4000, // 可以自行定义错误码
@@ -116,7 +121,7 @@ src/controllers // 控制层
             errStruct.errCode = 4100
             errStruct.alert = '鉴权失败,请重新登录'
         }
-    
+
         ctx.res.writeHead(200, {
             'content-Type': 'application/json'
         });
@@ -127,7 +132,7 @@ src/controllers // 控制层
   - 处理请求内容和上传功能
   ```
     npm i koa-body --save
-    
+
     src/server.ts
     app.use(koaBody({
         multipart: true, // 是否支持 multipart-formdate 的表单
@@ -155,9 +160,9 @@ src/controllers // 控制层
   - 后端代码
   ```
     npm i koa-jwt jsonwebtoken
-    
+
     src/controllers/admin/login.ts
-    
+
     const secret = '****' // 秘钥标识
     const token = jwt.sign({
         name: opts.username,
@@ -169,11 +174,11 @@ src/controllers // 控制层
             token: token,
             userId: doc._id
         },
-        message: '登录成功' 
+        message: '登录成功'
     }
-    
+
     src/server.ts
-    
+
     app.use(koajwt({
         secret: 秘钥标识
     }).unless({
@@ -188,7 +193,6 @@ src/controllers // 控制层
     }))
   ```
 
-
 ## linux服务器搭建
 - 安装javajdk
   - [下载linux x64压缩包](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
@@ -197,7 +201,7 @@ src/controllers // 控制层
   - 将jdk-8u144-linux-x64.tar.gz文件拷贝一份到/usr/java `cp jdk-8u144-linux-x64.tar.gz /usr/java`
   - `cd /usr/java` 在java目录下，解压JDK压缩文件 `tar -zxvf jdk-8u144-linux-x64.tar.gz`
   - 删除JDK压缩包 `rm -f jdk-8u144-linux-x64.tar.gz`
-  - 编辑全局变量 `vim /etc/profile` 键盘按下i进入编辑模式 
+  - 编辑全局变量 `vim /etc/profile` 键盘按下i进入编辑模式
   - 在文本最后一行添加如下之后保存退出(ESC -> :wq)
   ```
     #java environment
@@ -213,21 +217,21 @@ src/controllers // 控制层
   ```
     #node environment
     export NODE_HOME=/usr/soft/node/node-v12.18.2-linux-x64
-    export PATH=$PATH:$NODE_HOME/bin 
+    export PATH=$PATH:$NODE_HOME/bin
     export NODE_PATH=$NODE_HOME/lib/node_modules
   ```
   - 查看环境变量是否生效 -> `source /etc/profile` -> `node -v` 若出现版本号说明生效
 - 安装mongodb
   - 可根据此网站进行安装(https://mirror.tuna.tsinghua.edu.cn/help/mongodb/)
   - 执行cat `/etc/mongod.conf` 查看相关配置
-  - tips: 
+  - tips:
     - 可能会出现因为没有创建db文件夹 或 端口号已被占用问题
     - 默认配置只允许本机连接.若需要远程连接服务器数据库,可以在mongod.conf(注释bindIp, 添加bindIpAll,也可指定ip连接)
     ```
     net:
       port: 27017
     # bindIp: 127.0.0.1  # Enter 0.0.0.0,:: to bind to all IPv4 and IPv6 addresses   or, alternatively, use the net.bindIpAll setting.
-      bindIpAll: true	
+      bindIpAll: true
     ```
     - 配置完,服务器需要对数据库启动的端口号设置完全组.
 
@@ -283,3 +287,135 @@ src/controllers // 控制层
       - Job for nginx.service failed because the control process exited with error code(配置文件有可能语句没有以;结尾)
       - Failed to start The nginx HTTP and reverse proxy server(nginx启动时80端口被占用,可以杀死80端口进程,重新启动)
       - nginx 权限问题可执行 `403 chmod -R 777 /root`
+
+
+## git相关操作
+- 把本地文件夹设置成git远程仓库
+    1. `git init`
+    2. `git remote add origin git 地址`
+    3. `git remote set-url origin git https地址`
+    4. `git pull origin master --allow-unrelated-histories`合并两个独立启动仓库的历史
+
+
+## 对象存储
+- 阿里云oss
+    1. 创建 bucket
+    2. 获取accesskeyid和accesssecret
+    3. nodejs使用ali-oss
+    ```
+        npm i ali-oss
+
+        src/controllers/admin/file.ts
+
+        import OSS from 'ali-oss'
+        let client = new OSS({
+            accessKeyId: accessKeyId,
+            accessKeySecret: accessKeySecret,
+            bucket: 创建的bucketname,
+            region: oss所属地区,
+            cname: true, // 是否使用自定义域名
+            endpoint: 'dxy-oss1.oss-cn-beijing.aliyuncs.com'
+        })
+
+        const file = ctx.request.files.file // 接收传输到后端的blob文件流
+        let result = await client.put(file.name, file.path);
+    ```
+- 腾讯云cos
+    1. 创建存储桶
+    2. 获取SecretId和SecretKey
+    3. nodejs使用腾讯云cos
+    ```
+        npm i cos-nodejs-sdk-v5
+
+        src/controllers/admin/file.ts
+
+        const COS = require('cos-nodejs-sdk-v5')
+        const cos = new COS({
+            SecretId: SecretId,
+            SecretKey: 获取SecretId和SecretKey
+        });
+
+        const file = ctx.request.files.file
+        const params = {
+            Bucket: 存储桶名称,
+            Region: cos所属地区,
+            Key: file.name, // 随意确认的文件key
+            FilePath: file.path // 文件路径
+        }
+
+        cos.sliceUploadFile(params, (err: any, data: any) => {
+            console.log(err, data)
+        })
+
+    ```
+
+
+## HTTP缓存
+
+- 强缓存
+    - Expires: 服务端返回的到期时间,在响应http请求时告诉浏览器在过期时间前浏览器可以直接从浏览器缓存取数据,而无需再次请求.
+        - 缺点:当客户端时间和服务端时间不一致时,到期时间根据服务端时间.
+    - Cache-Control: 定义所有缓存机制都必须遵循的缓存指示,包括public、private、no-cache(表示可以存储，但在重新验证其有效性之前不能用于响应客户端请求)、no-store、max-age、s-maxage以及must-revalidate
+    - 优先级： Cache-Control > Expires
+    - 用法:
+    ```
+        ctx.response.set('cache-control', `public, max-age=${60 * 10}`)
+        ctx.response.set('expires', new Date(Date.now() + 2 * 60 * 1000).toString());
+    ```
+    - 更新强缓存:
+        - 缓存到期
+        - 服务器上的文件名称更改(打包后文件名加hash值)
+
+- 协议缓存
+    - Last-Modified/If-Modified-Since
+        - Last-Modified: 服务器在响应请求时，告诉浏览器资源的最后修改时间。
+        - If-Modified-Since: 再次请求服务器时，通过此字段通知服务器上次请求时，服务器返回的资源最后修改时间。服务器收到请求后发现有头If-Modified-Since则与被请求资源的最后修改时间进行比对。若资源的最后修改时间大于If-Modified-Since，说明资源又被改动过，则响应整片资源内容，返回状态码200；若资源的最后修改时间小于或等于If-Modified-Since，说明资源无新修改，则响应HTTP304，告知浏览器继续使用所保存的cache。
+        - 缺点: Last-Modified 标注的最后修改时间只能精确到秒，如果有些资源在一秒之内被多次修改的话，他就不能准确标注文件的新鲜度了如果某些资源会被定期生成，当内容没有变化，但Last-Modified却改变了，导致文件没使用缓存有可能存在服务器没有准确获取资源修改时间，或者与代理服务器时间不一致的情形
+    - Etag/If-None-Match
+        - Etag: 服务器资源的唯一标识符, 浏览器可以根据ETag值缓存数据, 节省带宽
+        - If-None-Match:再次请求服务器时，通过此字段通知服务器客户段缓存数据的唯一标识.服务器收到请求后发现有头If-None-Match则与被请求资源的唯一标识进行比对.
+    - 优先级: Etag/If-None-Match > Last-Modified/If-Modified-Since
+    - 用法:
+    ```
+        const ifNoneMatch = ctx.header['if-none-match']
+        const ifModifiedSince = ctx.header['if-modified-since']
+        if (ifNoneMatch && ifModifiedSince && !checkEtag(ctx, ifNoneMatch, doc)) {
+            ctx.status = 304
+        } else {
+            ctx.body = {
+                errCode: 0,
+                data: {
+                    list: doc
+                },
+                message: 'success'
+            }
+
+            ctx.response.set('cache-control', `no-cache`)
+            ctx.response.set('Content-Type', `application/json`)
+            ctx.response.set('Last-Modified', `${new Date()}`)
+            ctx.response.set('Etag', `${crypto.createHash('md5').update(doc.toString()).digest('hex')}`)
+        }
+
+        checkEtag(ctx, ifNoneMatch, doc) {
+            if (ifNoneMatch) {
+                // 要去检查文件是否更改，生成md5（hash），再转化为 hex （16进制）
+                const etag = crypto.createHash('md5').update(doc.toString()).digest('hex')
+                // 没更改
+                if (ifNoneMatch === etag) {
+                    // 304 继续使用缓存
+                    return false
+                } else {
+                    return true
+                }
+            } else {
+                return true
+            }
+        }
+    ```
+
+- 优先级: 强缓存 > 协议缓存
+- 不能缓存的请求
+    1. 不能被缓存的请求HTTP信息头中包含Cache-Control:no-cache，pragma:no-cache，或Cache-Control:max-age=0 等告诉浏览器不用缓存的请求
+    2. 需要根据Cookie，认证信息等决定输入内容的动态请求是不能被缓存的
+    3. HTTP 响应头中不包含 Last-Modified/Etag，也不包含 Cache-Control/Expires 的请求无法被缓存
+    4. 目前浏览器的实现是不会对POST请求的响应做缓存的（从语义上来说也不应该），并且规范中也规定了返回状态码不允许是304.如果在POST请求对应的响应中包含Freshness相关信息的话，这次响应也是可以被缓存.
