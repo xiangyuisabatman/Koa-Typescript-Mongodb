@@ -23,7 +23,13 @@
 * [对象存储 - 文件上传](#对象存储)
   * 阿里云oss
   * 腾讯云cos
-
+* [HTTP缓存](#http缓存)
+  * 强缓存
+  * 协议缓存
+  * 优先级
+  * 不能缓存的请求
+* [日志持久化到数据库](#日志持久化到数据库)
+  
 ## 基础
 1. 安装node, npm环境,在命令行node -v, npm -v 判断node, npm安装是否成功
 2. 运行koa项目,打开地址可正常访问
@@ -46,7 +52,7 @@ import config from './index'
 const initDB = () => {
     mongoose.connect(
         config.dbPath,
-        {
+        { 
             useNewUrlParser: true,
             useUnifiedTopology: true,
             useCreateIndex: true,
@@ -74,12 +80,12 @@ src/controllers // 控制层
   - 在控制台输出请求日志
   ```
     npm i koa-logger --save
-
+    
     src/server.ts
-
+    
     import logger from 'koa-logger'
     app.use(logger())
-
+    
     app.use(async (ctx: { method: any; url: any }, next: () => any) => {
         const start = Number(new Date())
         await next()
@@ -92,26 +98,26 @@ src/controllers // 控制层
   - 创建路由
   ```
     npm i koa-router --save
-
+  
     src/routes/index.ts
-
+    
     import Router from "koa-router";    // 导入koa-router
     import {index} from '../controllers/test'
-
+    
     // 新建一个koa-router对象
     const router:Router = new Router({
         prefix: '/api' // 添加前缀
     });     
-
+    
     router.get('/', index)
-
+    
     export default router
   ```
 - 错误处理
   - 监听错误并返回错误信息
   ```
     src/server.ts
-
+    
     app.on('error', async (err, ctx) => {
         let errStruct = {
             errCode: 4000, // 可以自行定义错误码
@@ -121,7 +127,7 @@ src/controllers // 控制层
             errStruct.errCode = 4100
             errStruct.alert = '鉴权失败,请重新登录'
         }
-
+    
         ctx.res.writeHead(200, {
             'content-Type': 'application/json'
         });
@@ -132,7 +138,7 @@ src/controllers // 控制层
   - 处理请求内容和上传功能
   ```
     npm i koa-body --save
-
+    
     src/server.ts
     app.use(koaBody({
         multipart: true, // 是否支持 multipart-formdate 的表单
@@ -160,9 +166,9 @@ src/controllers // 控制层
   - 后端代码
   ```
     npm i koa-jwt jsonwebtoken
-
+    
     src/controllers/admin/login.ts
-
+    
     const secret = '****' // 秘钥标识
     const token = jwt.sign({
         name: opts.username,
@@ -174,11 +180,11 @@ src/controllers // 控制层
             token: token,
             userId: doc._id
         },
-        message: '登录成功'
+        message: '登录成功' 
     }
-
+    
     src/server.ts
-
+    
     app.use(koajwt({
         secret: 秘钥标识
     }).unless({
@@ -201,7 +207,7 @@ src/controllers // 控制层
   - 将jdk-8u144-linux-x64.tar.gz文件拷贝一份到/usr/java `cp jdk-8u144-linux-x64.tar.gz /usr/java`
   - `cd /usr/java` 在java目录下，解压JDK压缩文件 `tar -zxvf jdk-8u144-linux-x64.tar.gz`
   - 删除JDK压缩包 `rm -f jdk-8u144-linux-x64.tar.gz`
-  - 编辑全局变量 `vim /etc/profile` 键盘按下i进入编辑模式
+  - 编辑全局变量 `vim /etc/profile` 键盘按下i进入编辑模式 
   - 在文本最后一行添加如下之后保存退出(ESC -> :wq)
   ```
     #java environment
@@ -217,21 +223,21 @@ src/controllers // 控制层
   ```
     #node environment
     export NODE_HOME=/usr/soft/node/node-v12.18.2-linux-x64
-    export PATH=$PATH:$NODE_HOME/bin
+    export PATH=$PATH:$NODE_HOME/bin 
     export NODE_PATH=$NODE_HOME/lib/node_modules
   ```
   - 查看环境变量是否生效 -> `source /etc/profile` -> `node -v` 若出现版本号说明生效
 - 安装mongodb
   - 可根据此网站进行安装(https://mirror.tuna.tsinghua.edu.cn/help/mongodb/)
   - 执行cat `/etc/mongod.conf` 查看相关配置
-  - tips:
+  - tips: 
     - 可能会出现因为没有创建db文件夹 或 端口号已被占用问题
     - 默认配置只允许本机连接.若需要远程连接服务器数据库,可以在mongod.conf(注释bindIp, 添加bindIpAll,也可指定ip连接)
     ```
     net:
       port: 27017
     # bindIp: 127.0.0.1  # Enter 0.0.0.0,:: to bind to all IPv4 and IPv6 addresses   or, alternatively, use the net.bindIpAll setting.
-      bindIpAll: true
+      bindIpAll: true	
     ```
     - 配置完,服务器需要对数据库启动的端口号设置完全组.
 
@@ -304,9 +310,9 @@ src/controllers // 控制层
     3. nodejs使用ali-oss
     ```
         npm i ali-oss
-
+        
         src/controllers/admin/file.ts
-
+        
         import OSS from 'ali-oss'
         let client = new OSS({
             accessKeyId: accessKeyId,
@@ -316,7 +322,7 @@ src/controllers // 控制层
             cname: true, // 是否使用自定义域名
             endpoint: 'dxy-oss1.oss-cn-beijing.aliyuncs.com'
         })
-
+        
         const file = ctx.request.files.file // 接收传输到后端的blob文件流
         let result = await client.put(file.name, file.path);
     ```
@@ -326,15 +332,15 @@ src/controllers // 控制层
     3. nodejs使用腾讯云cos
     ```
         npm i cos-nodejs-sdk-v5
-
+        
         src/controllers/admin/file.ts
-
+        
         const COS = require('cos-nodejs-sdk-v5')
         const cos = new COS({
             SecretId: SecretId,
             SecretKey: 获取SecretId和SecretKey
         });
-
+        
         const file = ctx.request.files.file
         const params = {
             Bucket: 存储桶名称,
@@ -342,30 +348,30 @@ src/controllers // 控制层
             Key: file.name, // 随意确认的文件key
             FilePath: file.path // 文件路径
         }
-
+        
         cos.sliceUploadFile(params, (err: any, data: any) => {
             console.log(err, data)
         })
-
+        
     ```
 
 
-## HTTP缓存
+## http缓存
 
 - 强缓存
     - Expires: 服务端返回的到期时间,在响应http请求时告诉浏览器在过期时间前浏览器可以直接从浏览器缓存取数据,而无需再次请求.
         - 缺点:当客户端时间和服务端时间不一致时,到期时间根据服务端时间.
     - Cache-Control: 定义所有缓存机制都必须遵循的缓存指示,包括public、private、no-cache(表示可以存储，但在重新验证其有效性之前不能用于响应客户端请求)、no-store、max-age、s-maxage以及must-revalidate
     - 优先级： Cache-Control > Expires
-    - 用法:
+    - 用法: 
     ```
         ctx.response.set('cache-control', `public, max-age=${60 * 10}`)
         ctx.response.set('expires', new Date(Date.now() + 2 * 60 * 1000).toString());
     ```
-    - 更新强缓存:
+    - 更新强缓存: 
         - 缓存到期
         - 服务器上的文件名称更改(打包后文件名加hash值)
-
+        
 - 协议缓存
     - Last-Modified/If-Modified-Since
         - Last-Modified: 服务器在响应请求时，告诉浏览器资源的最后修改时间。
@@ -375,7 +381,7 @@ src/controllers // 控制层
         - Etag: 服务器资源的唯一标识符, 浏览器可以根据ETag值缓存数据, 节省带宽
         - If-None-Match:再次请求服务器时，通过此字段通知服务器客户段缓存数据的唯一标识.服务器收到请求后发现有头If-None-Match则与被请求资源的唯一标识进行比对.
     - 优先级: Etag/If-None-Match > Last-Modified/If-Modified-Since
-    - 用法:
+    - 用法: 
     ```
         const ifNoneMatch = ctx.header['if-none-match']
         const ifModifiedSince = ctx.header['if-modified-since']
@@ -389,13 +395,13 @@ src/controllers // 控制层
                 },
                 message: 'success'
             }
-
+    
             ctx.response.set('cache-control', `no-cache`)
             ctx.response.set('Content-Type', `application/json`)
             ctx.response.set('Last-Modified', `${new Date()}`)
             ctx.response.set('Etag', `${crypto.createHash('md5').update(doc.toString()).digest('hex')}`)
         }
-
+        
         checkEtag(ctx, ifNoneMatch, doc) {
             if (ifNoneMatch) {
                 // 要去检查文件是否更改，生成md5（hash），再转化为 hex （16进制）
@@ -412,10 +418,140 @@ src/controllers // 控制层
             }
         }
     ```
-
+    
 - 优先级: 强缓存 > 协议缓存
 - 不能缓存的请求
     1. 不能被缓存的请求HTTP信息头中包含Cache-Control:no-cache，pragma:no-cache，或Cache-Control:max-age=0 等告诉浏览器不用缓存的请求
     2. 需要根据Cookie，认证信息等决定输入内容的动态请求是不能被缓存的
     3. HTTP 响应头中不包含 Last-Modified/Etag，也不包含 Cache-Control/Expires 的请求无法被缓存
     4. 目前浏览器的实现是不会对POST请求的响应做缓存的（从语义上来说也不应该），并且规范中也规定了返回状态码不允许是304.如果在POST请求对应的响应中包含Freshness相关信息的话，这次响应也是可以被缓存.
+
+
+## 日志持久化到数据库
+- `npm i log4js`
+- 正常请求
+```
+    src/util/log.ts
+    
+    import log4js from 'log4js'
+    let resLogger = log4js.getLogger('response')
+    
+    const log2db = (msg: String, level: String = 'info', info: any) => {
+        let log = {
+            level: level,
+            message: msg,
+            info: {
+                method: info.method,
+                url: info.url,
+                costTime: info.costTime,
+                body: JSON.stringify(info.body),
+                status: level === 'info' ? info.response.status : info.err.status,
+                response: {
+                    status: info.response.status,
+                    message: level === 'info' ? info.response.message : info.err.message,
+                    header: JSON.stringify(info.response.header),
+                    body: JSON.stringify(info.response.body)
+                }
+            }
+        }
+        Log.create(log, (err: any, res: any) => {
+            if(err) {console.log(err)}
+        })
+    }
+    
+    const formatError = (ctx: any, err: any, costTime: any) => {
+        const {method, url, body, response, status} = ctx
+        return {method, url, body, costTime, err, response, status}
+    }
+    
+    const formatRes = (ctx: any, costTime: any) => {
+        const {method, url, body, response} = ctx
+        return {method, url, body, costTime, response}
+    }
+    
+    // 封装响应日志
+    resLogger = (ctx: any, resTime: any) => {
+        if(ctx) {
+            log2db('RequestInfo', 'info', formatRes(ctx, resTime))
+            resLogger.info(formatRes(ctx, resTime))
+        }
+    }
+    
+    src/server.ts
+    app.use(async (ctx: { method: any; url: any }, next: () => any) => {
+        const start = Number(new Date())
+        await next()
+        const end = Number(new Date())
+        const ms = start - end
+        console.log(`${ctx.method} ${ctx.url} - ${ms}ms`)
+      + log4js.resLogger(ctx, ms)
+    })
+```
+- 错误日志
+```
+    src/util/log.ts
+    let errorLogger = log4js.getLogger('error')
+    // 封装错误日志
+    errLogger = (ctx: any, error: any, resTime?: any) => {
+        if(ctx && error) {
+            log2db('ErrorRequest', 'error', formatError(ctx, error, resTime))
+            errorLogger.error(formatError(ctx, error, resTime))
+        }
+    }
+    
+    src/server.ts
+    app.on('error', async (err, ctx) => {
+      + log4js.errLogger(ctx, err)
+        let errStruct = {
+            errCode: 4000, // 可以自行定义错误码
+            alert: err.message
+        }
+        if (err.status && err.status === 401) {
+            errStruct.errCode = 4100
+            errStruct.alert = '鉴权失败,请重新登录'
+        }
+    
+        ctx.res.writeHead(200, {
+            'content-Type': 'application/json'
+        });
+        ctx.res.end(JSON.stringify(errStruct));
+    })
+```
+- 日志Schema
+```
+    import mongoose from 'mongoose'
+    import moment from 'moment'
+    
+    const { Schema, model } = mongoose
+    
+    const logSchema = new Schema({
+        level: {
+            type: String
+        },
+        message: {
+            type: String
+        },
+        info: {
+            method: String,
+            url: String,
+            costTime: Number,
+            body: String,
+            status: Number,
+            response: {
+                status: Number,
+                message: String,
+                header: String,
+                body: String
+            }
+        },
+        createDate: {
+            type: Date,
+            default: Date.now(),
+            get: (v: any) => moment(v).format('YYYY-MM-DD HH:mm:ss')
+        }
+    })
+    
+    logSchema.set('toJSON', {getters: true})
+    
+    export default model('log', logSchema, 'logs')
+```
