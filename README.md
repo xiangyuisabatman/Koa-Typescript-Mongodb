@@ -37,7 +37,7 @@
 
 ## mongodb安装
 1. windows 本地环境安装mongodb,前往官网安装mongodb,创建db(数据库)文件夹,logs(日志)文件夹
-2. 进入mongodb的安装目下bin文件夹下,cmd执行`mongodb --dbpath db文件夹路径`,若出现没有结束状态,可以在此目录下重新打开一个cmd执行`mongo`若出现>_即mongodb本地启动成功.mongodb默认启动地址`mongodb://127.0.0.1:27017`
+2. 进入mongodb的安装目下bin文件夹下,cmd执行`mongod --dbpath db文件夹路径`,若出现没有结束状态,可以在此目录下重新打开一个cmd执行`mongo`若出现>_即mongodb本地启动成功.mongodb默认启动地址`mongodb://127.0.0.1:27017`
 
 
 ## 本地koa连接mongodb
